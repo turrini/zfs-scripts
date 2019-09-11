@@ -1,0 +1,45 @@
+#!/bin/bash
+
+#
+# Script to show the history of a file/directory in the ZFS snapshots
+# Written by Arthur Turrini <turrini@gmail.com>
+#
+
+if [[ ! -e "$1" ]]; then
+    echo -e "Usage:\n\t$(basename $0) <filename> [latest N snapshots]"
+    echo -e "\nExample:\n\t$(basename $0) /bin/ls 1000 (1000 is the default)"
+    echo
+    exit 0
+fi
+
+if [[ -z "$2" ]]; then
+    N=1000
+else
+    N="$2"
+fi
+
+TARGET=$(findmnt -n -o TARGET -T "$1")
+SOURCE=$(findmnt -n -o SOURCE -T "$1")
+ZFSPATH="$TARGET/.zfs/snapshot"
+FILEPATH=$(readlink -e "$1" | sed -e "s#^$TARGET/##")
+SNAPS=$(env LC_ALL=C sudo zfs list -H -t snapshot -o name -s creation | grep ^$SOURCE@ | sed -e "s#^$SOURCE@##" | tail -n $N)
+
+echo "# Snapshot history for '$TARGET/$FILEPATH'"
+(
+for SNAP in ${SNAPS[@]}
+do
+    if [[ -e "$ZFSPATH/$SNAP/$FILEPATH" ]]; then
+        ls -ld "$ZFSPATH/$SNAP/$FILEPATH"
+    fi
+done
+) | awk '{
+    for(i=1; i<=8; i++) {
+	if($(i) != f[i]) {
+	    print $0;
+	    break;
+	}
+    }
+    for(i=1; i<=8; i++) {
+	f[i] = $(i);
+    }
+}'
