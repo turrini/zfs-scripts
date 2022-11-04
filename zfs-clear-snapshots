@@ -3,12 +3,14 @@
 # Script to clear (destroy) ZFS snapshots
 # Written by Arthur Turrini <turrini@gmail.com>
 
+[[ "$(whoami)" == "root" ]] || USE_SUDO="sudo"
+
 echo -e "# Will remove these snapshots:"
 
 if [[ -z "$1" ]]; then
-    SNAPS=$(env LC_ALL=C sudo zfs list -H -t snapshot -o name -s creation | grep @)
+    SNAPS=$(env LC_ALL=C ${USE_SUDO} zfs list -H -t snapshot -o name -s creation | grep @)
 else
-    SNAPS=$(env LC_ALL=C sudo zfs list -H -t snapshot -o name -s creation | grep @ | egrep "$1")
+    SNAPS=$(env LC_ALL=C ${USE_SUDO} zfs list -H -t snapshot -o name -s creation | grep @ | egrep "$1")
 fi
 
 printf "%s\n"  "${SNAPS[@]}"
@@ -22,5 +24,5 @@ fi
 for SNAP in ${SNAPS[@]}
 do
     echo -e "# Destroying $SNAP ..."
-    env LC_ALL=C sudo zfs destroy "$SNAP"
+    env LC_ALL=C ${USE_SUDO} zfs destroy "$SNAP"
 done
