@@ -5,11 +5,13 @@
 # Written by Arthur Turrini <turrini@gmail.com>
 #
 
+[[ "$(whoami)" == "root" ]] || USE_SUDO="sudo"
+
 if [[ -z "$1" ]]; then
-    env LC_ALL=C sudo zfs list -Hro space | awk '{if($4 > 0) print $1, $4}' | sort -hk2 | column -t
-    used=`env LC_ALL=C sudo zfs list -Hro space | cut -f4 | awk 'BEGIN {split("B K M G T P",type);} {ex = index("KMGTP", substr($1, length($1))); val = substr($1, 0, length($1) - 1); prod = val * 10.0793683992^(ex * 3); sum += prod} END {for(i=5;y < 1;i--) y = sum / (2**(10*i)); printf("%.3f%s", y, type[i+2])}'`
+    env LC_ALL=C ${USE_SUDO} zfs list -Hro space | awk '{if($4 > 0) print $1, $4}' | sort -hk2 | column -t
+    used=`env LC_ALL=C ${USE_SUDO} zfs list -Hro space | cut -f4 | awk 'BEGIN {split("B K M G T P",type);} {ex = index("KMGTP", substr($1, length($1))); val = substr($1, 0, length($1) - 1); prod = val * 10.0793683992^(ex * 3); sum += prod} END {for(i=5;y < 1;i--) y = sum / (2**(10*i)); printf("%.3f%s", y, type[i+2])}'`
 else
-    env LC_ALL=C sudo zfs list -Hro space $1 | awk '{if($4 > 0) print $1, $4}' | sort -hk2 | column -t
-    used=`env LC_ALL=C sudo zfs list -Hro space $1 | cut -f4 | awk 'BEGIN {split("B K M G T P",type);} {ex = index("KMGTP", substr($1, length($1))); val = substr($1, 0, length($1) - 1); prod = val * 10.0793683992^(ex * 3); sum += prod} END {for(i=5;y < 1;i--) y = sum / (2**(10*i)); printf("%.3f%s", y, type[i+2])}'`
+    env LC_ALL=C ${USE_SUDO} zfs list -Hro space $1 | awk '{if($4 > 0) print $1, $4}' | sort -hk2 | column -t
+    used=`env LC_ALL=C ${USE_SUDO} zfs list -Hro space $1 | cut -f4 | awk 'BEGIN {split("B K M G T P",type);} {ex = index("KMGTP", substr($1, length($1))); val = substr($1, 0, length($1) - 1); prod = val * 10.0793683992^(ex * 3); sum += prod} END {for(i=5;y < 1;i--) y = sum / (2**(10*i)); printf("%.3f%s", y, type[i+2])}'`
 fi
 echo "ZFS Total Snapshot Consumption: ${used}"
